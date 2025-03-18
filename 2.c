@@ -21,12 +21,19 @@ int main(int argc, char *argv[]) {
 
     int n, temp;
     printf("Enter the number of integers: "); // printf("Введите количество чисел: ");
-    scanf("%d", &n);
+    while (scanf("%d", &n)!=1 || n<=0 || getchar()!='\n') {
+        printf ("Incorrect data entered. Please try entering again.");
+        rewind (stdin);
+    }
+
 
     // Запись чисел в файл
     printf("Enter %d integers: ", n); //printf("Введите %d чисел: ", n);
     for (int i = 0; i < n; i++) {
-        scanf("%d", &temp);
+       while (scanf("%d", &temp)!=1 || getchar()!='\n') {
+        printf ("Incorrect data entered. Please try entering again.");
+        rewind (stdin);
+       }
         fwrite(&temp, sizeof(int), 1, file);
     }
 
