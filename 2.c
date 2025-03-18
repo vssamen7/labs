@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 // Функция для обмена местами двух элементов в файле
 void swap(FILE *file, int pos1, int pos2);
 // Функция для сортировки положительных чисел в файле
 void sort_positives(FILE *file);
+
+// Функция для проверки корректности ввода
+int get_valid_input();
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -20,20 +24,15 @@ int main(int argc, char *argv[]) {
     }
 
     int n, temp;
-    printf("Enter the number of integers: "); // printf("Введите количество чисел: ");
-    while (scanf("%d", &n)!=1 || n<=0 || getchar()!='\n') {
-        printf ("Incorrect data entered. Please try entering again.");
-        rewind (stdin);
-    }
 
+    // Получение корректного значения для количества чисел
+    printf("Enter the number of integers: "); // printf("Введите количество чисел: ");
+    n = get_valid_input();
 
     // Запись чисел в файл
-    printf("Enter %d integers: ", n); //printf("Введите %d чисел: ", n);
+    printf("Enter %d integers:\n", n); // printf("Введите %d чисел:\n", n);
     for (int i = 0; i < n; i++) {
-       while (scanf("%d", &temp)!=1 || getchar()!='\n') {
-        printf ("Incorrect data entered. Please try entering again.");
-        rewind (stdin);
-       }
+        temp = get_valid_input(); // Используем проверку для каждого числа
         fwrite(&temp, sizeof(int), 1, file);
     }
 
@@ -46,7 +45,7 @@ int main(int argc, char *argv[]) {
     }
     printf("\n");
 
-   // Поиск максимального и минимального значений
+    // Поиск максимального и минимального значений
     rewind(file);
     int max = INT_MIN, min = INT_MAX, count_max = 0;
     for (int i = 0; i < n; i++) {
@@ -61,23 +60,23 @@ int main(int argc, char *argv[]) {
             min = temp;
         }
     }
-    printf("Max value: %d, Count: %d\n", max, count_max);//printf("Максимальное значение: %d, Количество: %d\n", max, count_max);
+    printf("Max value: %d, Count: %d\n", max, count_max); // printf("Максимальное значение: %d, Количество: %d\n", max, count_max);
 
     // Замена всех максимальных значений на минимальное
     rewind(file);
     for (int i = 0; i < n; i++) {
         fread(&temp, sizeof(int), 1, file);
         if (temp == max) {
-            fseek(file, sizeof(int), SEEK_CUR);
-            fwrite(&min, sizeof(int), 1, file);
+            fseek(file, sizeof(int), SEEK_CUR); // Перемещаем указатель назад
+            fwrite(&min, sizeof(int), 1, file);  // Записываем минимальное значение
         }
     }
 
-     // Сортировка положительных чисел в файле
+    // Сортировка положительных чисел в файле
     sort_positives(file);
 
     // Вывод изменённых данных из файла
-    printf("Modified data in the file:\n");//printf("Изменённые данные в файле:\n");
+    printf("Modified data in the file:\n"); // printf("Изменённые данные в файле:\n");
     rewind(file);
     for (int i = 0; i < n; i++) {
         fread(&temp, sizeof(int), 1, file);
@@ -89,6 +88,22 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+// Реализация функции проверки ввода
+int get_valid_input() {
+    int task;
+    while (1) {
+        char b;
+        if (scanf("%d%c", &task, &b) == 2 && b == '\n') {
+            break; // Корректный ввод
+        } else {
+            printf("Invalid input. Please try again: "); // printf("Некорректный ввод. Повторите еще раз: ");
+            while (getchar() != '\n'); // Очистка буфера
+        }
+    }
+    return task;
+}
+
+// Реализация функции обмена элементов
 void swap(FILE *file, int pos1, int pos2) {
     int val1, val2;
     fseek(file, pos1 * sizeof(int), SEEK_SET);
@@ -102,11 +117,12 @@ void swap(FILE *file, int pos1, int pos2) {
     fwrite(&val1, sizeof(int), 1, file);
 }
 
+// Реализация функции сортировки положительных чисел
 void sort_positives(FILE *file) {
     int temp1, temp2, size;
     rewind(file);
 
-   // Вычисление количества чисел в файле
+    // Вычисление количества чисел в файле
     fseek(file, 0, SEEK_END);
     size = ftell(file) / sizeof(int);
 
